@@ -47,7 +47,7 @@ class LegacySkinAdapter implements SkinAdapter{
 		$geometryData = $skin->getGeometryData();
 		if($geometryData === ""){
 			//the client drops the connection if it receives an empty geometry string
-			$geometryData = SkinData::GEOMETRY_DATA_NONE;
+			$geometryData = "null";
 		}
 		return new SkinData(
 			$skin->getSkinId(),

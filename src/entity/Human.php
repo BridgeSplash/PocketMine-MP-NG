@@ -536,7 +536,7 @@ class Human extends Living implements ProjectileSource, InventoryHolder{
 		$entityEventBroadcaster->onMobOffHandItemChange([$networkSession], $this);
 
 		if(!($this instanceof Player)){
-			$networkSession->sendDataPacket(PlayerListPacket::remove([$this->uuid]));
+			$networkSession->sendDataPacket(PlayerListPacket::remove([PlayerListEntry::createRemovalEntry($this->uuid)]));
 		}
 	}
 

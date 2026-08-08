@@ -208,12 +208,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/kostamax27/BedrockProtocol-NG.git",
-                "reference": "9e3f9816fb963cbc7b42e0e09e332de04433d040"
+                "reference": "0f9aa54ea759f25160bfb3bd9c9dde817be701ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kostamax27/BedrockProtocol-NG/zipball/9e3f9816fb963cbc7b42e0e09e332de04433d040",
-                "reference": "9e3f9816fb963cbc7b42e0e09e332de04433d040",
+                "url": "https://api.github.com/repos/kostamax27/BedrockProtocol-NG/zipball/0f9aa54ea759f25160bfb3bd9c9dde817be701ff",
+                "reference": "0f9aa54ea759f25160bfb3bd9c9dde817be701ff",
                 "shasum": ""
             },
             "require": {
@@ -256,7 +256,7 @@
             "support": {
                 "source": "https://github.com/kostamax27/BedrockProtocol-NG/tree/master"
             },
-            "time": "2026-08-08T18:57:37+00:00"
+            "time": "2026-08-08T22:16:20+00:00"
         },
         {
             "name": "netresearch/jsonmapper",
