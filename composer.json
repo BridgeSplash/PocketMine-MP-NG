@@ -104,11 +104,11 @@
    "repositories": [
       {
          "type": "vcs",
-         "url":  "git@github.com:NetherGamesMC/BedrockProtocol.git"
+         "url":  "git@github.com:kostamax27/BedrockProtocol-NG.git"
       },
       {
          "type": "vcs",
-         "url":  "git@github.com:NetherGamesMC/BedrockData.git"
+         "url":  "git@github.com:kostamax27/BedrockData-NG.git"
       }
    ]
 }

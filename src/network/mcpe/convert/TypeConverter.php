@@ -50,11 +50,13 @@ use pocketmine\nbt\TreeRoot;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\network\mcpe\NetworkBroadcastUtils;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\network\mcpe\protocol\serializer\ItemTypeDictionary;
 use pocketmine\network\mcpe\protocol\types\GameMode as ProtocolGameMode;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStack;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStackExtraData;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStackExtraDataShield;
+use pocketmine\network\mcpe\protocol\types\recipe\IntIdMetaItemDescriptor;
 use pocketmine\network\mcpe\protocol\types\recipe\RecipeIngredient as ProtocolRecipeIngredient;
 use pocketmine\network\mcpe\protocol\types\recipe\StringIdMetaItemDescriptor;
 use pocketmine\network\mcpe\protocol\types\recipe\TagItemDescriptor;
@@ -155,9 +157,16 @@ class TypeConverter{
 			return new ProtocolRecipeIngredient(null, 0);
 		}
 		if($ingredient instanceof MetaWildcardRecipeIngredient){
-			$id = $ingredient->getItemId();
-			$meta = self::RECIPE_INPUT_WILDCARD_META;
-			$descriptor = new StringIdMetaItemDescriptor($id, $meta);
+			$oldStringId = $ingredient->getItemId();
+			[$stringId, $meta] = $this->itemDataDowngrader->downgrade($oldStringId, 0);
+
+			$meta = $meta === 0 && $stringId === $oldStringId ? self::RECIPE_INPUT_WILDCARD_META : $meta; // downgrader returns the same meta
+			if($this->protocolId >= ProtocolInfo::PROTOCOL_1_26_40){
+				$descriptor = new StringIdMetaItemDescriptor($stringId, $meta);
+			}else{
+				$id = $this->itemTypeDictionary->fromStringId($stringId);
+				$descriptor = new IntIdMetaItemDescriptor($id, $meta);
+			}
 		}elseif($ingredient instanceof ExactRecipeIngredient){
 			$item = $ingredient->getItem();
 			[$id, $meta, $blockRuntimeId] = $this->itemTranslator->toNetworkId($item);
@@ -167,8 +176,12 @@ class TypeConverter{
 					throw new AssumptionFailedError("Every block state should have an associated meta value");
 				}
 			}
-			$id = $this->itemTypeDictionary->fromIntId($id);
-			$descriptor = new StringIdMetaItemDescriptor($id, $meta);
+			if($this->protocolId >= ProtocolInfo::PROTOCOL_1_26_40){
+				$id = $this->itemTypeDictionary->fromIntId($id);
+				$descriptor = new StringIdMetaItemDescriptor($id, $meta);
+			}else{
+				$descriptor = new IntIdMetaItemDescriptor($id, $meta);
+			}
 		}elseif($ingredient instanceof TagWildcardRecipeIngredient){
 			$descriptor = new TagItemDescriptor($ingredient->getTagName());
 		}else{
