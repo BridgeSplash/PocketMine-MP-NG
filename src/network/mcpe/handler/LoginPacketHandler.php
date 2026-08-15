@@ -238,16 +238,16 @@ class LoginPacketHandler extends PacketHandler{
 		}
 
 		$clientData = $this->parseClientData($packet->clientDataJwt);
-		//TODO: HACK! Remove this check after protocol version 2168.
-		//This is a temporary measure because Mojang made breaking protocol changes in v26.44
-		try{
-			$version = new VersionString($clientData->GameVersion);
-		}catch(\InvalidArgumentException $e){
-			throw PacketHandlingException::wrap($e);
-		}
-		if($version->getPatch() < 44){
-			$this->session->disconnectWithError(KnownTranslationFactory::disconnectionScreen_outdatedClient());
-			return null;
+
+		if($this->session->getProtocolId() === ProtocolInfo::PROTOCOL_1_26_40){
+			try{
+				$version = new VersionString($clientData->GameVersion);
+			}catch(\InvalidArgumentException $e){
+				throw PacketHandlingException::wrap($e);
+			}
+			if($version->getMajor() === 1 && $version->getMinor() === 26 && $version->getPatch() === 44){
+				$this->session->setProtocolId(ProtocolInfo::PROTOCOL_1_26_44);
+			}
 		}
 
 		try{
