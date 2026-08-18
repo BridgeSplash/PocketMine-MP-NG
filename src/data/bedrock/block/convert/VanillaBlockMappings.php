@@ -35,6 +35,7 @@ use pocketmine\block\Bell;
 use pocketmine\block\BigDripleafHead;
 use pocketmine\block\Block;
 use pocketmine\block\BrewingStand;
+use pocketmine\block\BubbleColumn;
 use pocketmine\block\Cactus;
 use pocketmine\block\Cake;
 use pocketmine\block\Candle;
@@ -1306,6 +1307,9 @@ final class VanillaBlockMappings{
 			BrewingStandSlot::SOUTHWEST => StateNames::BREWING_STAND_SLOT_B_BIT,
 			BrewingStandSlot::NORTHWEST => StateNames::BREWING_STAND_SLOT_C_BIT
 		}, fn(BrewingStand $b) => $b->hasSlot($slot), fn(BrewingStand $b, bool $v) => $b->setSlot($slot, $v)), BrewingStandSlot::cases())));
+		$reg->mapModel(Model::create(Blocks::BUBBLE_COLUMN(), Ids::BUBBLE_COLUMN)->properties([
+			new BoolProperty(StateNames::DRAG_DOWN, fn(BubbleColumn $b) => $b->isDragDown(), fn(BubbleColumn $b, bool $v) => $b->setDragDown($v))
+		]));
 
 		//C
 		$reg->mapModel(Model::create(Blocks::CACTUS(), Ids::CACTUS)->properties([
