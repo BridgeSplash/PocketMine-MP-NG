@@ -38,6 +38,8 @@ use function mb_strtoupper;
 final class VanillaEnchantments{
 	private static Enchantment $_mAQUA_AFFINITY;
 	private static ProtectionEnchantment $_mBLAST_PROTECTION;
+	private static Enchantment $_mBREACH;
+	private static Enchantment $_mDENSITY;
 	private static Enchantment $_mEFFICIENCY;
 	private static ProtectionEnchantment $_mFEATHER_FALLING;
 	private static FireAspectEnchantment $_mFIRE_ASPECT;
@@ -60,6 +62,7 @@ final class VanillaEnchantments{
 	private static Enchantment $_mTHORNS;
 	private static Enchantment $_mUNBREAKING;
 	private static Enchantment $_mVANISHING;
+	private static Enchantment $_mWIND_BURST;
 
 	/**
 	 * @var Enchantment[]
@@ -96,6 +99,8 @@ final class VanillaEnchantments{
 		return [
 			"AQUA_AFFINITY" => fn(Enchantment $v) => self::$_mAQUA_AFFINITY = $v,
 			"BLAST_PROTECTION" => fn(ProtectionEnchantment $v) => self::$_mBLAST_PROTECTION = $v,
+			"BREACH" => fn(Enchantment $v) => self::$_mBREACH = $v,
+			"DENSITY" => fn(Enchantment $v) => self::$_mDENSITY = $v,
 			"EFFICIENCY" => fn(Enchantment $v) => self::$_mEFFICIENCY = $v,
 			"FEATHER_FALLING" => fn(ProtectionEnchantment $v) => self::$_mFEATHER_FALLING = $v,
 			"FIRE_ASPECT" => fn(FireAspectEnchantment $v) => self::$_mFIRE_ASPECT = $v,
@@ -118,6 +123,7 @@ final class VanillaEnchantments{
 			"THORNS" => fn(Enchantment $v) => self::$_mTHORNS = $v,
 			"UNBREAKING" => fn(Enchantment $v) => self::$_mUNBREAKING = $v,
 			"VANISHING" => fn(Enchantment $v) => self::$_mVANISHING = $v,
+			"WIND_BURST" => fn(Enchantment $v) => self::$_mWIND_BURST = $v,
 		];
 	}
 
@@ -164,6 +170,16 @@ final class VanillaEnchantments{
 	public static function BLAST_PROTECTION() : ProtectionEnchantment{
 		if(!isset(self::$_mBLAST_PROTECTION)){ self::init(); }
 		return self::$_mBLAST_PROTECTION;
+	}
+
+	public static function BREACH() : Enchantment{
+		if(!isset(self::$_mBREACH)){ self::init(); }
+		return self::$_mBREACH;
+	}
+
+	public static function DENSITY() : Enchantment{
+		if(!isset(self::$_mDENSITY)){ self::init(); }
+		return self::$_mDENSITY;
 	}
 
 	public static function EFFICIENCY() : Enchantment{
@@ -274,5 +290,10 @@ final class VanillaEnchantments{
 	public static function VANISHING() : Enchantment{
 		if(!isset(self::$_mVANISHING)){ self::init(); }
 		return self::$_mVANISHING;
+	}
+
+	public static function WIND_BURST() : Enchantment{
+		if(!isset(self::$_mWIND_BURST)){ self::init(); }
+		return self::$_mWIND_BURST;
 	}
 }

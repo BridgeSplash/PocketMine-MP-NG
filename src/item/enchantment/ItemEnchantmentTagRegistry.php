@@ -54,6 +54,7 @@ final class ItemEnchantmentTagRegistry{
 		$this->register(Tags::SWORD);
 		$this->register(Tags::TRIDENT);
 		$this->register(Tags::SPEAR);
+		$this->register(Tags::MACE);
 		$this->register(Tags::BOW);
 		$this->register(Tags::CROSSBOW);
 		$this->register(Tags::SHEARS);
@@ -69,6 +70,7 @@ final class ItemEnchantmentTagRegistry{
 			Tags::SWORD,
 			Tags::TRIDENT,
 			Tags::SPEAR,
+			Tags::MACE,
 			Tags::BOW,
 			Tags::CROSSBOW,
 			Tags::BLOCK_TOOLS,
