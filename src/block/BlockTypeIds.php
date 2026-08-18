@@ -859,8 +859,9 @@ final class BlockTypeIds{
 	public const SEAGRASS = 10828;
 	public const BUBBLE_COLUMN = 10829;
 	public const GOLDEN_DANDELION = 10830;
+	public const MOSS_BLOCK = 10831;
 
-	public const FIRST_UNUSED_BLOCK_ID = 10831;
+	public const FIRST_UNUSED_BLOCK_ID = 10832;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_BLOCK_ID;
 
