@@ -104,6 +104,7 @@ use pocketmine\item\enchantment\MeleeWeaponEnchantment;
 use pocketmine\item\Item;
 use pocketmine\item\ItemUseResult;
 use pocketmine\item\Releasable;
+use pocketmine\item\Spear;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\lang\Language;
 use pocketmine\lang\Translatable;
@@ -1543,6 +1544,11 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 
 			if($this->isCreative() && $this->fireTicks > 1){
 				$this->fireTicks = 1;
+			}
+
+			$item = $this->getInventory()->getItemInHand();
+			if($item instanceof Spear && $this->isUsingItem()){
+				$item->whileSpearUsing($this);
 			}
 
 			if(!$this->isSpectator() && $this->isAlive()){
