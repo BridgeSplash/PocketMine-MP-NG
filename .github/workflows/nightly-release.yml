@@ -1,0 +1,121 @@
+name: Nightly release
+
+on:
+  push:
+    branches:
+      - stable
+  workflow_dispatch:
+
+env:
+  PHP_VERSION: "8.2"
+  NIGHTLY_TAG: nightly
+
+concurrency:
+  group: nightly-release
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  nightly:
+    name: Build and publish nightly phar
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+
+      - name: Restore Composer package cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cache/composer/files
+            ~/.cache/composer/vcs
+          key: "composer-v2-cache-${{ hashFiles('./composer.lock') }}"
+          restore-keys: |
+            composer-v2-cache-
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction --ignore-platform-reqs
+
+      - name: Calculate build number
+        id: build-number
+        run: |
+          BUILD_NUMBER=$((2300+$GITHUB_RUN_NUMBER)) #to stay above jenkins
+          echo "Build number: $BUILD_NUMBER"
+          echo BUILD_NUMBER=$BUILD_NUMBER >> $GITHUB_OUTPUT
+
+      - name: Minify BedrockData JSON files
+        run: php vendor/nethergamesmc/bedrock-data/.minify_json.php
+
+      - name: Build PocketMine-MP.phar
+        run: php -dphar.readonly=0 build/server-phar.php --git ${{ github.sha }} --build ${{ steps.build-number.outputs.BUILD_NUMBER }}
+
+      - name: Get PocketMine-MP version info
+        id: get-pm-version
+        run: |
+          echo PM_VERSION=$(php build/dump-version-info.php base_version) >> $GITHUB_OUTPUT
+          echo PM_MAJOR=$(php build/dump-version-info.php major_version) >> $GITHUB_OUTPUT
+          echo MCPE_VERSION=$(php build/dump-version-info.php mcpe_version) >> $GITHUB_OUTPUT
+          echo MCPE_DISPLAY_VERSION=$(php build/dump-version-info.php mcpe_display_version) >> $GITHUB_OUTPUT
+
+      - name: Generate PHP binary download URL
+        id: php-binary-url
+        run: |
+          echo PHP_BINARY_URL="${{ github.server_url }}/pmmp/PHP-Binaries/releases/tag/pm${{ steps.get-pm-version.outputs.PM_MAJOR }}-php-${{ env.PHP_VERSION }}-latest" >> $GITHUB_OUTPUT
+
+      - name: Generate build info
+        run: |
+          php build/generate-build-info-json.php \
+            ${{ github.sha }} \
+            ${{ env.NIGHTLY_TAG }} \
+            ${{ github.repository }} \
+            ${{ steps.build-number.outputs.BUILD_NUMBER }} \
+            ${{ github.run_id }} \
+            ${{ steps.php-binary-url.outputs.PHP_BINARY_URL }} \
+            > build_info.json
+
+      - name: Upload nightly artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly_artifacts
+          path: |
+            ${{ github.workspace }}/PocketMine-MP.phar
+            ${{ github.workspace }}/start.*
+            ${{ github.workspace }}/build_info.json
+
+      #the nightly tag is a rolling pointer to the newest build, so the old release has to go before it can be moved
+      - name: Remove previous nightly release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$NIGHTLY_TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
+            gh release delete "$NIGHTLY_TAG" --repo "${{ github.repository }}" --cleanup-tag --yes
+          fi
+
+      - name: Publish nightly release
+        uses: ncipollo/release-action@v1.21.0
+        with:
+          artifacts: ${{ github.workspace }}/PocketMine-MP.phar,${{ github.workspace }}/start.*,${{ github.workspace }}/build_info.json
+          commit: ${{ github.sha }}
+          tag: ${{ env.NIGHTLY_TAG }}
+          name: Nightly build ${{ steps.build-number.outputs.BUILD_NUMBER }}
+          prerelease: true
+          allowUpdates: true
+          removeArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            Automated build of `${{ github.ref_name }}` at commit ${{ github.sha }}.
+
+            **PocketMine-MP ${{ steps.get-pm-version.outputs.PM_VERSION }} for Minecraft: Bedrock Edition ${{ steps.get-pm-version.outputs.MCPE_VERSION }} (display version ${{ steps.get-pm-version.outputs.MCPE_DISPLAY_VERSION }})**
+
+            :warning: This is an untested development build. Do not run it in production, and do not open your worlds with it without a backup.
+
+            :information_source: Download the recommended PHP binary [here](${{ steps.php-binary-url.outputs.PHP_BINARY_URL }}).
