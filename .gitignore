@@ -40,7 +40,7 @@ Desktop.ini
 !/docs/requirements.txt
 
 # Composer
-vendor/*
+/vendor
 
 # Travis files
 test_data/*

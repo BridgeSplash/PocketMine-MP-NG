@@ -104,7 +104,7 @@
    "repositories": [
       {
          "type": "vcs",
-         "url":  "git@github.com:kostamax27/BedrockProtocol-NG.git"
+         "url":  "git@github.com:BridgeSplash/BedrockProtocol-NG.git"
       },
       {
          "type": "vcs",
