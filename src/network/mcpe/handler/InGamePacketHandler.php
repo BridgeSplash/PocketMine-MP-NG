@@ -35,6 +35,7 @@ use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\transaction\TransactionBuilder;
 use pocketmine\inventory\transaction\TransactionCancelledException;
 use pocketmine\inventory\transaction\TransactionValidationException;
+use pocketmine\item\GoatHorn;
 use pocketmine\item\VanillaItems;
 use pocketmine\item\WritableBook;
 use pocketmine\item\WritableBookPage;
@@ -44,7 +45,6 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\FilterNoisyPacketException;
-use pocketmine\network\mcpe\convert\ItemTranslator;
 use pocketmine\network\mcpe\InventoryManager;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
@@ -470,7 +470,9 @@ class InGamePacketHandler extends PacketHandler{
 					$this->lastRightClickData->getFace() === $data->getFace() &&
 					$this->lastRightClickData->getPlayerPosition()->distanceSquared($data->getPlayerPosition()) < 0.00001 &&
 					$this->lastRightClickData->getBlockPosition()->equals($data->getBlockPosition()) &&
-					$this->lastRightClickData->getClickPosition()->distanceSquared($clickPos) < 0.00001 //signature spam bug has 0 distance, but allow some error
+					$this->lastRightClickData->getClickPosition()->distanceSquared($clickPos) < 0.00001 && //signature spam bug has 0 distance, but allow some error
+					//the spam bug always predicts failure - without this check, legitimate fast placement gets dropped
+					($this->player->getNetworkSession()->getProtocolId() < ProtocolInfo::PROTOCOL_1_21_20 || $data->getClientInteractPrediction() === PredictedResult::FAILURE)
 				);
 				//get rid of continued spam if the player clicks and holds right-click
 				$this->lastRightClickData = $data;
@@ -480,25 +482,16 @@ class InGamePacketHandler extends PacketHandler{
 				}
 				//TODO: end hack for client spam bug
 
+				$this->syncBlockIfDesynced($data);
+
 				self::validateFacing($data->getFace());
 
 				$blockPos = $data->getBlockPosition();
 				$vBlockPos = new Vector3($blockPos->getX(), $blockPos->getY(), $blockPos->getZ());
-				$this->player->interactBlock($vBlockPos, $data->getFace(), $clickPos);
-				if($this->player->getNetworkSession()->getProtocolId() < ProtocolInfo::PROTOCOL_1_21_20 || $data->getClientInteractPrediction() === PredictedResult::SUCCESS){
-					//If the item has an associated blockstate ID, this means it will only place one block.
-					//We can avoid syncing the adjacent blocks of the place position in this case, since that's only
-					//necessary if there might be multiple blocks around the placement location affected.
-					//Adjacents of the clicked block are still always synced, since it's too complicated to figure out
-					//if the client might've predicted something in this case. However, since the clicked block is always
-					//"behind" the placed block, this shouldn't affect bridging or fast placement.
-					//This would be much easier if the client would just tell us which blocks it thinks changed...
-					$syncAdjacentFace = null;
-					if($data->getItemInHand()->getItemStack()->getBlockRuntimeId() === ItemTranslator::NO_BLOCK_RUNTIME_ID){
-						$this->session->getLogger()->debug("Placing held item might place multiple blocks client-side; doing full adjacent sync");
-						$syncAdjacentFace = $data->getFace();
-					}
-					$this->syncBlocksNearby($vBlockPos, $syncAdjacentFace);
+				//when the interaction succeeds server-side, the client's prediction was correct, so syncing would only
+				//undo what the client already rendered - this is what makes fast bridging feel laggy
+				if(!$this->player->interactBlock($vBlockPos, $data->getFace(), $clickPos) && !$this->isFailedPrediction($data)){
+					$this->syncBlocksNearby($vBlockPos, $data->getFace());
 				}
 				return true;
 			case UseItemTransactionData::ACTION_CLICK_AIR:
@@ -510,7 +503,10 @@ class InGamePacketHandler extends PacketHandler{
 					//TODO: workaround goat horns getting stuck in the "using item" state
 					//this timed-trigger behaviour is also used for other items apart from food
 					//in the future we'll generalise this logic and add proper hooks for it
-					$this->player->setUsingItem(false);
+					//only goat horns need it - clearing the state unconditionally cuts consumption short
+					if($this->player->getInventory()->getItemInHand() instanceof GoatHorn){
+						$this->player->setUsingItem(false);
+					}
 					return true;
 				}
 				$this->player->useHeldItem();
@@ -518,6 +514,37 @@ class InGamePacketHandler extends PacketHandler{
 		}
 
 		return false;
+	}
+
+	private function isFailedPrediction(UseItemTransactionData $data) : bool{
+		return $this->player->getNetworkSession()->getProtocolId() >= ProtocolInfo::PROTOCOL_1_21_20 &&
+			$data->getClientInteractPrediction() === PredictedResult::FAILURE;
+	}
+
+	/**
+	 * Resyncs the clicked block if the client's idea of it doesn't match the server's. Interacting based on a stale
+	 * block leads to the client and server disagreeing about what was placed.
+	 */
+	private function syncBlockIfDesynced(UseItemTransactionData $data) : void{
+		$blockPos = $data->getBlockPosition();
+		[$x, $y, $z] = [$blockPos->getX(), $blockPos->getY(), $blockPos->getZ()];
+
+		$world = $this->player->getWorld();
+		if(!$world->isInWorld($x, $y, $z)){
+			return;
+		}
+		$chunk = $world->getChunk($x >> Chunk::COORD_BIT_SIZE, $z >> Chunk::COORD_BIT_SIZE);
+		if($chunk === null){
+			return;
+		}
+
+		$expectedRuntimeId = $this->session->getTypeConverter()->getBlockTranslator()->internalIdToNetworkId(
+			$chunk->getBlockStateId($x & Chunk::COORD_MASK, $y, $z & Chunk::COORD_MASK)
+		);
+		if($data->getBlockRuntimeId() !== $expectedRuntimeId){
+			$this->session->getLogger()->debug("Syncing block at $x $y $z due to runtime ID mismatch");
+			$this->syncBlocksNearby(new Vector3($x, $y, $z), null);
+		}
 	}
 
 	/**

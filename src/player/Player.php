@@ -192,6 +192,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	private const MAX_REACH_DISTANCE_SURVIVAL = 7;
 	private const MAX_REACH_DISTANCE_ENTITY_INTERACTION = 8;
 
+	//dried kelp is the fastest vanilla consumable - anything below this can only come from a hacked client
+	private const MIN_CONSUME_DURATION_TICKS = 16;
+
 	public const DEFAULT_FLIGHT_SPEED_MULTIPLIER = 0.05;
 
 	public const TAG_FIRST_PLAYED = "firstPlayed"; //TAG_Long
@@ -386,9 +389,14 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 					$this->callDummyItemHeldEvent();
 				}
 			},
-			function() : void{
-				$this->setUsingItem(false);
-				$this->callDummyItemHeldEvent();
+			function(Inventory $unused, array $oldContents) : void{
+				//a bulk change doesn't necessarily involve the held item - cancelling item use for unrelated changes
+				//(e.g. a hopper filling another slot) would interrupt eating and bow charging
+				$heldIndex = $this->inventory->getHeldItemIndex();
+				if(!isset($oldContents[$heldIndex]) || !$oldContents[$heldIndex]->equalsExact($this->inventory->getItem($heldIndex))){
+					$this->setUsingItem(false);
+					$this->callDummyItemHeldEvent();
+				}
 			}
 		));
 
@@ -1750,6 +1758,11 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	public function consumeHeldItem() : bool{
 		$slot = $this->inventory->getItemInHand();
 		if($slot instanceof ConsumableItem){
+			if($this->getItemUseDuration() < self::MIN_CONSUME_DURATION_TICKS){
+				//the client decides when consumption finishes, so without this a hacked client could eat instantly
+				return false;
+			}
+
 			$oldItem = clone $slot;
 
 			$residue = $slot->getResidue();
@@ -1956,7 +1969,11 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	 * @return bool if it did something
 	 */
 	public function interactBlock(Vector3 $pos, int $face, Vector3 $clickOffset) : bool{
-		$this->setUsingItem(false);
+		//releasable items (bow, trident, ...) keep being used while the player looks at a block, so an interaction
+		//must not silently cancel the charge-up
+		if(!$this->isUsingItem() || !$this->inventory->getItemInHand() instanceof Releasable){
+			$this->setUsingItem(false);
+		}
 
 		if($this->canInteract($pos->add(0.5, 0.5, 0.5), $this->isCreative() ? self::MAX_REACH_DISTANCE_CREATIVE : self::MAX_REACH_DISTANCE_SURVIVAL)){
 			$this->broadcastAnimation(new ArmSwingAnimation($this), $this->getViewers());
