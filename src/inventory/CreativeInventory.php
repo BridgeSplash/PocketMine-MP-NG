@@ -72,6 +72,15 @@ final class CreativeInventory{
 	];
 
 	/**
+	 * Groups listed here are ignored, so their contents are shown as individual entries instead of collapsing into a
+	 * single expandable icon. Spawn eggs are only grouped because the vanilla data says so - most of them aren't
+	 * implemented, and hiding the implemented ones behind a category isn't useful.
+	 */
+	private const UNGROUPED_GROUP_NAMES = [
+		"itemGroup.name.mobEgg" => true,
+	];
+
+	/**
 	 * @var CreativeInventoryEntry[]
 	 * @phpstan-var array<int, CreativeInventoryEntry>
 	 */
@@ -95,7 +104,9 @@ final class CreativeInventory{
 			);
 
 			foreach($groups as $groupData){
-				$icon = $groupData->group_icon === null ? null : CraftingManagerFromDataHelper::deserializeItemStack($groupData->group_icon);
+				$icon = isset(self::UNGROUPED_GROUP_NAMES[$groupData->group_name]) || $groupData->group_icon === null ?
+					null :
+					CraftingManagerFromDataHelper::deserializeItemStack($groupData->group_icon);
 
 				$group = $icon === null ? null : new CreativeGroup(
 					new Translatable($groupData->group_name),
