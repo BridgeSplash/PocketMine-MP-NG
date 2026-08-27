@@ -70,7 +70,7 @@ final class CreativeInventory{
 					$icon
 				);
 
-				$items = array_filter(array_map(static fn($itemStack) => CraftingManagerFromDataHelper::deserializeItemStack($itemStack), $groupData->items));
+				$items = array_filter(array_map(static fn($itemStack) => CraftingManagerFromDataHelper::deserializeCreativeItemStack($itemStack), $groupData->items));
 
 				foreach($items as $item){
 					$this->add($item, $categoryEnum, $group);

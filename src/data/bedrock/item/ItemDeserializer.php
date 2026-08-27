@@ -31,6 +31,7 @@ use pocketmine\data\bedrock\block\convert\UnsupportedBlockStateException;
 use pocketmine\data\bedrock\item\SavedItemData as Data;
 use pocketmine\item\Durable;
 use pocketmine\item\Item;
+use pocketmine\item\UnknownItemRegistry;
 use pocketmine\nbt\NbtException;
 use function min;
 
@@ -80,7 +81,7 @@ final class ItemDeserializer{
 			try{
 				$block = $this->blockStateDeserializer->deserialize($blockData);
 			}catch(UnsupportedBlockStateException $e){
-				throw new UnsupportedItemTypeException($e->getMessage(), 0, $e);
+				return self::deserializeUnknown($data) ?? throw new UnsupportedItemTypeException($e->getMessage(), 0, $e);
 			}catch(BlockStateDeserializeException $e){
 				throw new ItemTypeDeserializeException("Failed to deserialize item data: " . $e->getMessage(), 0, $e);
 			}
@@ -90,10 +91,18 @@ final class ItemDeserializer{
 		}
 		$id = $data->getName();
 		if(!isset($this->deserializers[$id])){
-			throw new UnsupportedItemTypeException("No deserializer found for ID $id");
+			return self::deserializeUnknown($data) ?? throw new UnsupportedItemTypeException("No deserializer found for ID $id");
 		}
 
 		return ($this->deserializers[$id])($data);
+	}
+
+	/**
+	 * Returns a placeholder for item types the server doesn't implement, if one was registered for this identity.
+	 * Without this, unimplemented items obtained from the creative menu would be lost on save/load.
+	 */
+	private static function deserializeUnknown(Data $data) : ?Item{
+		return UnknownItemRegistry::getInstance()->get($data->getName(), $data->getMeta());
 	}
 
 	/**

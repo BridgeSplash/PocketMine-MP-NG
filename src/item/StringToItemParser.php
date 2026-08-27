@@ -34,11 +34,15 @@ use pocketmine\block\utils\FroglightType;
 use pocketmine\block\utils\MobHeadType;
 use pocketmine\block\utils\SlabType;
 use pocketmine\block\VanillaBlocks as Blocks;
+use pocketmine\inventory\CreativeInventory;
 use pocketmine\item\VanillaItems as Items;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\StringToTParser;
 use function array_keys;
 use function count;
+use function explode;
+use function str_contains;
 use function strtolower;
 
 /**
@@ -56,8 +60,24 @@ final class StringToItemParser extends StringToTParser{
 		self::registerBlocks($result);
 		self::registerDynamicItems($result);
 		self::registerItems($result);
+		self::registerUnknownItems($result);
 
 		return $result;
+	}
+
+	/**
+	 * Registers aliases for item types the client knows about but the server doesn't implement, so that they can still
+	 * be obtained via commands. Loading the creative contents is what discovers these types in the first place.
+	 */
+	private static function registerUnknownItems(self $result) : void{
+		CreativeInventory::getInstance();
+
+		foreach(UnknownItemRegistry::getInstance()->getAll() as $item){
+			$alias = str_contains($item->getBedrockId(), ":") ? explode(":", $item->getBedrockId(), 2)[1] : $item->getBedrockId();
+			if($result->parse($alias) === null){
+				$result->register($alias, fn() => UnknownItemRegistry::getInstance()->get($item->getBedrockId(), $item->getBedrockMeta()) ?? throw new AssumptionFailedError("Unknown item was registered but cannot be looked up"));
+			}
+		}
 	}
 
 	private static function registerDynamicBlocks(self $result) : void{

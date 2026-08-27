@@ -37,6 +37,7 @@ use pocketmine\data\bedrock\item\SavedItemStackData;
 use pocketmine\data\SavedDataLoadingException;
 use pocketmine\errorhandler\ErrorToExceptionHandler;
 use pocketmine\item\Item;
+use pocketmine\item\UnknownItemRegistry;
 use pocketmine\nbt\LittleEndianNbtSerializer;
 use pocketmine\utils\Filesystem;
 use pocketmine\utils\Utils;
@@ -99,10 +100,27 @@ final class CraftingManagerFromDataHelper{
 	}
 
 	/**
+	 * Same as {@link CraftingManagerFromDataHelper::deserializeItemStack()}, but falls back to an {@link UnknownItem}
+	 * placeholder for item types the server doesn't implement, so that they can still be shown in the creative menu.
+	 */
+	public static function deserializeCreativeItemStack(ItemStackData $data) : ?Item{
+		return self::deserializeItemStackFromFields(
+			$data->name,
+			$data->meta ?? null,
+			$data->count ?? null,
+			$data->block_states ?? null,
+			$data->nbt ?? null,
+			$data->can_place_on ?? [],
+			$data->can_destroy ?? [],
+			true
+		);
+	}
+
+	/**
 	 * @param string[] $canPlaceOn
 	 * @param string[] $canDestroy
 	 */
-	private static function deserializeItemStackFromFields(string $name, ?int $meta, ?int $count, ?string $blockStatesRaw, ?string $nbtRaw, array $canPlaceOn, array $canDestroy) : ?Item{
+	private static function deserializeItemStackFromFields(string $name, ?int $meta, ?int $count, ?string $blockStatesRaw, ?string $nbtRaw, array $canPlaceOn, array $canDestroy, bool $allowUnknown = false) : ?Item{
 		$meta ??= 0;
 		$count ??= 1;
 
@@ -144,7 +162,9 @@ final class CraftingManagerFromDataHelper{
 			return GlobalItemDataHandlers::getDeserializer()->deserializeStack($itemStackData);
 		}catch(ItemTypeDeserializeException){
 			//probably unknown item
-			return null;
+			return $allowUnknown ?
+				UnknownItemRegistry::getInstance()->register($name, $meta, $blockStateData)->setCount($count) :
+				null;
 		}
 	}
 
