@@ -32,12 +32,44 @@ use pocketmine\utils\DestructorCallbackTrait;
 use pocketmine\utils\ObjectSet;
 use pocketmine\utils\SingletonTrait;
 use Symfony\Component\Filesystem\Path;
-use function array_filter;
 use function array_map;
+use function str_starts_with;
 
 final class CreativeInventory{
 	use SingletonTrait;
 	use DestructorCallbackTrait;
+
+	/**
+	 * The vanilla creative contents include Education Edition items, which vanilla only shows when Education features
+	 * are enabled. Since those features aren't supported, they'd only be clutter in the creative menu.
+	 *
+	 * Prefixes cover the chemistry elements and compounds, plus the hardened glass family.
+	 */
+	private const EDUCATION_ONLY_ID_PREFIXES = [
+		"minecraft:compound",
+		"minecraft:element_",
+		"minecraft:hard_",
+	];
+
+	private const EDUCATION_ONLY_IDS = [
+		"minecraft:balloon" => true,
+		"minecraft:bleach" => true,
+		"minecraft:chemical_heat" => true,
+		"minecraft:colored_torch_blue" => true,
+		"minecraft:colored_torch_green" => true,
+		"minecraft:colored_torch_purple" => true,
+		"minecraft:colored_torch_red" => true,
+		"minecraft:glow_stick" => true,
+		"minecraft:ice_bomb" => true,
+		"minecraft:lab_table" => true,
+		"minecraft:material_reducer" => true,
+		"minecraft:medicine" => true,
+		"minecraft:rapid_fertilizer" => true,
+		"minecraft:sparkler" => true,
+		"minecraft:super_fertilizer" => true,
+		"minecraft:underwater_tnt" => true,
+		"minecraft:underwater_torch" => true,
+	];
 
 	/**
 	 * @var CreativeInventoryEntry[]
@@ -70,13 +102,30 @@ final class CreativeInventory{
 					$icon
 				);
 
-				$items = array_filter(array_map(static fn($itemStack) => CraftingManagerFromDataHelper::deserializeCreativeItemStack($itemStack), $groupData->items));
-
-				foreach($items as $item){
-					$this->add($item, $categoryEnum, $group);
+				foreach($groupData->items as $itemStack){
+					if(self::isEducationOnly($itemStack->name)){
+						continue;
+					}
+					$item = CraftingManagerFromDataHelper::deserializeCreativeItemStack($itemStack);
+					if($item !== null){
+						$this->add($item, $categoryEnum, $group);
+					}
 				}
 			}
 		}
+	}
+
+	private static function isEducationOnly(string $bedrockId) : bool{
+		if(isset(self::EDUCATION_ONLY_IDS[$bedrockId])){
+			return true;
+		}
+		foreach(self::EDUCATION_ONLY_ID_PREFIXES as $prefix){
+			if(str_starts_with($bedrockId, $prefix)){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
