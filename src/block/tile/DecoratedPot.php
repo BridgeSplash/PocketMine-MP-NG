@@ -34,6 +34,7 @@ use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\world\World;
 
 class DecoratedPot extends Spawnable implements Container{
@@ -88,7 +89,7 @@ class DecoratedPot extends Spawnable implements Container{
 		$this->writeDecorations($nbt);
 	}
 
-	protected function addAdditionalSpawnData(CompoundTag $nbt) : void{
+	protected function addAdditionalSpawnData(CompoundTag $nbt, TypeConverter $typeConverter) : void{
 		$this->writeDecorations($nbt);
 	}
 

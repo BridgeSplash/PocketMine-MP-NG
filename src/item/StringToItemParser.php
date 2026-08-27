@@ -730,7 +730,6 @@ final class StringToItemParser extends StringToTParser{
 		$result->registerBlock("hay_bale", fn() => Blocks::HAY_BALE());
 		$result->registerBlock("hay_block", fn() => Blocks::HAY_BALE());
 		$result->registerBlock("heavy_weighted_pressure_plate", fn() => Blocks::WEIGHTED_PRESSURE_PLATE_HEAVY());
-		$result->registerBlock("honey_block", fn() => Blocks::HONEY_BLOCK());
 		$result->registerBlock("honeycomb_block", fn() => Blocks::HONEYCOMB());
 		$result->registerBlock("hopper", fn() => Blocks::HOPPER());
 		$result->registerBlock("hopper_block", fn() => Blocks::HOPPER());
