@@ -209,6 +209,10 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::CUT_SANDSTONE(), Ids::CUT_SANDSTONE);
 		$reg->mapSimple(Blocks::DARK_PRISMARINE(), Ids::DARK_PRISMARINE);
 		$reg->mapSimple(Blocks::DEAD_BUSH(), Ids::DEADBUSH);
+		$reg->mapSimple(Blocks::BUSH(), Ids::BUSH);
+		$reg->mapSimple(Blocks::FIREFLY_BUSH(), Ids::FIREFLY_BUSH);
+		$reg->mapSimple(Blocks::SHORT_DRY_GRASS(), Ids::SHORT_DRY_GRASS);
+		$reg->mapSimple(Blocks::TALL_DRY_GRASS(), Ids::TALL_DRY_GRASS);
 		$reg->mapSimple(Blocks::DEEPSLATE_BRICKS(), Ids::DEEPSLATE_BRICKS);
 		$reg->mapSimple(Blocks::DEEPSLATE_COAL_ORE(), Ids::DEEPSLATE_COAL_ORE);
 		$reg->mapSimple(Blocks::DEEPSLATE_COPPER_ORE(), Ids::DEEPSLATE_COPPER_ORE);

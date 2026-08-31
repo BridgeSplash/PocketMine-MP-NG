@@ -387,6 +387,10 @@ final class StringToItemParser extends StringToTParser{
 		$result->registerBlock("daylight_detector_inverted", fn() => Blocks::DAYLIGHT_SENSOR()->setInverted(true));
 		$result->registerBlock("daylight_sensor", fn() => Blocks::DAYLIGHT_SENSOR());
 		$result->registerBlock("daylight_sensor_inverted", fn() => Blocks::DAYLIGHT_SENSOR()->setInverted(true));
+		$result->registerBlock("bush", fn() => Blocks::BUSH());
+		$result->registerBlock("firefly_bush", fn() => Blocks::FIREFLY_BUSH());
+		$result->registerBlock("short_dry_grass", fn() => Blocks::SHORT_DRY_GRASS());
+		$result->registerBlock("tall_dry_grass", fn() => Blocks::TALL_DRY_GRASS());
 		$result->registerBlock("dead_bush", fn() => Blocks::DEAD_BUSH());
 		$result->registerBlock("deadbush", fn() => Blocks::DEAD_BUSH());
 		$result->registerBlock("decorated_pot", fn() => Blocks::DECORATED_POT());
