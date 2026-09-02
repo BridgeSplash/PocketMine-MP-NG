@@ -208,12 +208,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/BridgeSplash/BedrockProtocol-NG.git",
-                "reference": "9faffcaa23d9a339bed3047a612c480872f2224b"
+                "reference": "21f24adec05a264512219b9b96ea7bb2944ce03c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/BridgeSplash/BedrockProtocol-NG/zipball/9faffcaa23d9a339bed3047a612c480872f2224b",
-                "reference": "9faffcaa23d9a339bed3047a612c480872f2224b",
+                "url": "https://api.github.com/repos/BridgeSplash/BedrockProtocol-NG/zipball/21f24adec05a264512219b9b96ea7bb2944ce03c",
+                "reference": "21f24adec05a264512219b9b96ea7bb2944ce03c",
                 "shasum": ""
             },
             "require": {
@@ -256,7 +256,7 @@
             "support": {
                 "source": "https://github.com/BridgeSplash/BedrockProtocol-NG/tree/master"
             },
-            "time": "2026-08-23T15:40:37+00:00"
+            "time": "2026-09-02T22:12:19+00:00"
         },
         {
             "name": "netresearch/jsonmapper",
@@ -653,6 +653,7 @@
                 "issues": "https://github.com/pmmp/RakLib/issues",
                 "source": "https://github.com/pmmp/RakLib/tree/1.2.1"
             },
+            "abandoned": true,
             "time": "2025-12-24T03:02:42+00:00"
         },
         {
@@ -735,6 +736,7 @@
                 "issues": "https://github.com/pmmp/Snooze/issues",
                 "source": "https://github.com/pmmp/Snooze/tree/0.5.0"
             },
+            "abandoned": true,
             "time": "2023-05-22T23:43:01+00:00"
         },
         {
@@ -893,16 +895,16 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v6.4.44",
+            "version": "v6.4.45",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "e84ffb3e77e3a7144727a0d0735d0d9cc0ca77a7"
+                "reference": "6dabf41c21957a2060f101bd7bf7e322989866bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/e84ffb3e77e3a7144727a0d0735d0d9cc0ca77a7",
-                "reference": "e84ffb3e77e3a7144727a0d0735d0d9cc0ca77a7",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/6dabf41c21957a2060f101bd7bf7e322989866bd",
+                "reference": "6dabf41c21957a2060f101bd7bf7e322989866bd",
                 "shasum": ""
             },
             "require": {
@@ -939,7 +941,7 @@
             "description": "Provides basic utilities for the filesystem",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v6.4.44"
+                "source": "https://github.com/symfony/filesystem/tree/v6.4.45"
             },
             "funding": [
                 {
@@ -959,7 +961,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-08-20T20:21:47+00:00"
+            "time": "2026-08-23T07:59:31+00:00"
         }
     ],
     "packages-dev": [
