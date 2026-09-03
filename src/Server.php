@@ -1311,6 +1311,10 @@ class Server{
 		$useRakNet = $transportMode === "raknet" || $transportMode === "both";
 		//NetherNet discovery uses a single broadcast socket, a separate IPv6 bind is not needed
 		$useNetherNet = ($transportMode === "nethernet" || $transportMode === "both") && !$ipV6;
+		if($useNetherNet && !NetherNetTransportFactory::isSupported()){
+			$this->logger->warning("NetherNet is not usable on this PHP build (OpenSSL can't generate an identity key), only RakNet will be available");
+			$useNetherNet = false;
+		}
 		$rakNetRegistered = false;
 		try{
 			if($useRakNet){
@@ -1340,8 +1344,13 @@ class Server{
 					),
 					$this->tickSleeper
 				);
-				if($this->network->registerInterface(new TransportNetworkInterface($this, $transport, $packetBroadcaster, $entityEventBroadcaster, $typeConverter))){
-					$this->logger->info("NetherNet network interface running on $ip:" . NetherNetTransport::DISCOVERY_PORT);
+				try{
+					if($this->network->registerInterface(new TransportNetworkInterface($this, $transport, $packetBroadcaster, $entityEventBroadcaster, $typeConverter))){
+						$this->logger->info("NetherNet network interface running on $ip:" . NetherNetTransport::DISCOVERY_PORT);
+					}
+				}catch(NetworkInterfaceStartException $e){
+					//RakNet still serves every client that can't speak NetherNet, so this isn't fatal on its own
+					$this->logger->warning("Failed to start NetherNet network interface: " . $e->getMessage());
 				}
 			}
 		}catch(NetworkInterfaceStartException $e){

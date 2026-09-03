@@ -27,6 +27,8 @@ use altay\network\nethernet\NetherNetTransport;
 use altay\network\nethernet\ServerData;
 use altay\network\transport\Transport;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
+use function openssl_pkey_new;
+use const OPENSSL_KEYTYPE_EC;
 
 final class NetherNetTransportFactory implements TransportFactory{
 
@@ -41,6 +43,18 @@ final class NetherNetTransportFactory implements TransportFactory{
 		private int $signallingPort = 19132,
 		private ?string $identityKeyPath = null
 	){}
+
+	/**
+	 * NetherNet identifies the server with an EC keypair. Some PHP builds ship without an OpenSSL config, which makes
+	 * key generation fail - checking here keeps that from taking down the transport thread (and the server with it)
+	 * during startup.
+	 */
+	public static function isSupported() : bool{
+		return openssl_pkey_new([
+			"private_key_type" => OPENSSL_KEYTYPE_EC,
+			"curve_name" => "secp384r1"
+		]) !== false;
+	}
 
 	public function getName() : string{
 		return "nethernet";
