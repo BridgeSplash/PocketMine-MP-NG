@@ -384,7 +384,7 @@ class ParserPacketHandler extends PacketHandler{
 				}
 			}
 		}
-		$unlockingIngredients = $entry->getUnlockingRequirement()?->getUnlockingIngredients();
+		$unlockingIngredients = $entry->getUnlockingRequirement()->getUnlockingIngredients();
 		return new ShapedRecipeData(
 			array_map(fn(array $array) => implode('', array_values($array)), array_values($shape)),
 			$outputsByKey,
@@ -396,7 +396,7 @@ class ParserPacketHandler extends PacketHandler{
 	}
 
 	private function shapelessRecipeToJson(ShapelessRecipe $recipe) : ShapelessRecipeData{
-		$unlockingIngredients = $recipe->getUnlockingRequirement()?->getUnlockingIngredients();
+		$unlockingIngredients = $recipe->getUnlockingRequirement()->getUnlockingIngredients();
 		return new ShapelessRecipeData(
 			array_map(fn(RecipeIngredient $input) => $this->recipeIngredientToJson($input), $recipe->getInputs()),
 			array_map(fn(ItemStack $output) => $this->itemStackToJson($output), $recipe->getOutputs()),
@@ -433,37 +433,40 @@ class ParserPacketHandler extends PacketHandler{
 		@mkdir($recipesPath);
 
 		$recipes = [];
-		$recipeTypes = [
-			"shaped_crafting" => $packet->shapedRecipes,
-			"shapeless_crafting" => $packet->shapelessRecipes,
-			"special_hardcoded" => $packet->multiRecipes,
-			"shapeless_shulker_box" => $packet->userDataShapelessRecipes,
-			"shapeless_chemistry" => $packet->shapelessChemistryRecipes,
-			"shaped_chemistry" => $packet->shapedChemistryRecipes,
-			"smithing" => $packet->smithingTransformRecipes,
-			"smithing_trim" => $packet->smithingTrimRecipes,
-		];
-		foreach($recipeTypes as $mappedType => $entries){
-			foreach($entries as $entry){
-				if($entry instanceof ShapedRecipe){
-					//all known recipes are currently symmetric and I don't feel like attaching a `symmetric` field to
-					//every shaped recipe for this - split it into a separate category instead
-					if(!$entry->isSymmetric()){
-						$recipes[$mappedType . "_asymmetric"][] = $this->shapedRecipeToJson($entry);
-					}else{
-						$recipes[$mappedType][] = $this->shapedRecipeToJson($entry);
-					}
-				}elseif($entry instanceof ShapelessRecipe){
-					$recipes[$mappedType][] = $this->shapelessRecipeToJson($entry);
-				}elseif($entry instanceof MultiRecipe){
-					$recipes[$mappedType][] = $entry->getRecipeId()->toString();
-				}elseif($entry instanceof SmithingTransformRecipe){
-					$recipes[$mappedType][] = $this->smithingRecipeToJson($entry);
-				}elseif($entry instanceof SmithingTrimRecipe){
-					$recipes[$mappedType][] = $this->smithingTrimRecipeToJson($entry);
+		foreach($packet->recipesWithTypeIds as $entry){
+			static $typeMap = [
+				CraftingDataPacket::ENTRY_SHAPELESS => "shapeless_crafting",
+				CraftingDataPacket::ENTRY_SHAPED => "shaped_crafting",
+				CraftingDataPacket::ENTRY_MULTI => "special_hardcoded",
+				CraftingDataPacket::ENTRY_USER_DATA_SHAPELESS => "shapeless_shulker_box",
+				CraftingDataPacket::ENTRY_SHAPELESS_CHEMISTRY => "shapeless_chemistry",
+				CraftingDataPacket::ENTRY_SHAPED_CHEMISTRY => "shaped_chemistry",
+				CraftingDataPacket::ENTRY_SMITHING_TRANSFORM => "smithing",
+				CraftingDataPacket::ENTRY_SMITHING_TRIM => "smithing_trim",
+			];
+			if(!isset($typeMap[$entry->getTypeId()])){
+				throw new \UnexpectedValueException("Unknown recipe type ID " . $entry->getTypeId());
+			}
+			$mappedType = $typeMap[$entry->getTypeId()];
+
+			if($entry instanceof ShapedRecipe){
+				//all known recipes are currently symmetric and I don't feel like attaching a `symmetric` field to
+				//every shaped recipe for this - split it into a separate category instead
+				if(!$entry->isSymmetric()){
+					$recipes[$mappedType . "_asymmetric"][] = $this->shapedRecipeToJson($entry);
 				}else{
-					throw new AssumptionFailedError("Unknown recipe type " . get_class($entry));
+					$recipes[$mappedType][] = $this->shapedRecipeToJson($entry);
 				}
+			}elseif($entry instanceof ShapelessRecipe){
+				$recipes[$mappedType][] = $this->shapelessRecipeToJson($entry);
+			}elseif($entry instanceof MultiRecipe){
+				$recipes[$mappedType][] = $entry->getRecipeId()->toString();
+			}elseif($entry instanceof SmithingTransformRecipe){
+				$recipes[$mappedType][] = $this->smithingRecipeToJson($entry);
+			}elseif($entry instanceof SmithingTrimRecipe){
+				$recipes[$mappedType][] = $this->smithingTrimRecipeToJson($entry);
+			}else{
+				throw new AssumptionFailedError("Unknown recipe type " . get_class($entry));
 			}
 		}
 

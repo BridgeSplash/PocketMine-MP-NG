@@ -1528,7 +1528,7 @@ abstract class Entity{
 			$this->location->yaw, //TODO: head yaw
 			$this->location->yaw, //TODO: body yaw (wtf mojang?)
 			array_map(function(Attribute $attr) : NetworkAttribute{
-				return new NetworkAttribute($attr->getId(), $attr->getMinValue(), $attr->getMaxValue(), $attr->getValue());
+				return new NetworkAttribute($attr->getId(), $attr->getMinValue(), $attr->getMaxValue(), $attr->getValue(), $attr->getDefaultValue(), []);
 			}, array_values($this->attributeMap->getAll())),
 			$this->getAllNetworkData(),
 			new PropertySyncData([], []),
