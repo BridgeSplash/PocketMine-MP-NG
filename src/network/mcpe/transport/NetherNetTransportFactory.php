@@ -27,12 +27,6 @@ use altay\network\nethernet\NetherNetTransport;
 use altay\network\nethernet\ServerData;
 use altay\network\transport\Transport;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
-use function dirname;
-use function file_exists;
-use function getenv;
-use function putenv;
-use const PHP_BINARY;
-use const PHP_OS_FAMILY;
 
 final class NetherNetTransportFactory implements TransportFactory{
 

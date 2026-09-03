@@ -33,7 +33,6 @@ use altay\network\raknet\protocol\PacketSerializer;
 use altay\network\raknet\protocol\UnconnectedPing;
 use altay\network\raknet\protocol\UnconnectedPong;
 use pocketmine\utils\BinaryDataException;
-use pocketmine\utils\BinaryStream;
 use pocketmine\utils\Utils;
 use function bin2hex;
 use function count;

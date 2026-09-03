@@ -63,12 +63,12 @@ use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\PacketBroadcaster;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\network\mcpe\protocol\types\CompressionAlgorithm;
+use pocketmine\network\mcpe\StandardEntityEventBroadcaster;
+use pocketmine\network\mcpe\StandardPacketBroadcaster;
 use pocketmine\network\mcpe\transport\NetherNetTransportFactory;
 use pocketmine\network\mcpe\transport\RakNetTransportFactory;
 use pocketmine\network\mcpe\transport\ThreadedTransport;
 use pocketmine\network\mcpe\transport\TransportNetworkInterface;
-use pocketmine\network\mcpe\StandardEntityEventBroadcaster;
-use pocketmine\network\mcpe\StandardPacketBroadcaster;
 use pocketmine\network\Network;
 use pocketmine\network\NetworkInterfaceStartException;
 use pocketmine\network\query\DedicatedQueryNetworkInterface;
@@ -106,8 +106,8 @@ use pocketmine\timings\Timings;
 use pocketmine\timings\TimingsHandler;
 use pocketmine\updater\UpdateChecker;
 use pocketmine\utils\AssumptionFailedError;
-use pocketmine\utils\BroadcastLoggerForwarder;
 use pocketmine\utils\Binary;
+use pocketmine\utils\BroadcastLoggerForwarder;
 use pocketmine\utils\Config;
 use pocketmine\utils\Filesystem;
 use pocketmine\utils\Internet;
@@ -172,12 +172,12 @@ use function spl_object_id;
 use function sprintf;
 use function str_repeat;
 use function str_replace;
-use function substr;
 use function stripos;
 use function strlen;
 use function strrpos;
 use function strtolower;
 use function strval;
+use function substr;
 use function time;
 use function touch;
 use function trim;
@@ -1303,7 +1303,7 @@ class Server{
 		TypeConverter $typeConverter
 	) : bool{
 		$prettyIp = $ipV6 ? "[$ip]" : $ip;
-		$transportMode = strtolower($this->configGroup->getPropertyString(YmlServerProperties::NETWORK_TRANSPORT, "both"));
+		$transportMode = strtolower($this->configGroup->getPropertyString(Yml::NETWORK_TRANSPORT, "both"));
 		if($transportMode !== "raknet" && $transportMode !== "nethernet" && $transportMode !== "both"){
 			$this->logger->warning("Unknown network transport \"$transportMode\", defaulting to \"both\"");
 			$transportMode = "both";
@@ -1316,7 +1316,7 @@ class Server{
 			if($useRakNet){
 				$transport = new ThreadedTransport(
 					$this->logger,
-					new RakNetTransportFactory($ip, $port, $ipV6, $this->configGroup->getPropertyInt(YmlServerProperties::NETWORK_MAX_MTU_SIZE, 1492), mt_rand(0, PHP_INT_MAX)),
+					new RakNetTransportFactory($ip, $port, $ipV6, $this->configGroup->getPropertyInt(Yml::NETWORK_MAX_MTU_SIZE, 1492), mt_rand(0, PHP_INT_MAX)),
 					$this->tickSleeper
 				);
 				$rakNetRegistered = $this->network->registerInterface(new TransportNetworkInterface($this, $transport, $packetBroadcaster, $entityEventBroadcaster, $typeConverter));
