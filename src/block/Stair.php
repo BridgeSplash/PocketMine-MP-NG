@@ -45,23 +45,36 @@ class Stair extends Transparent implements HorizontalFacing{
 	protected function describeBlockOnlyState(RuntimeDataDescriber $w) : void{
 		$w->horizontalFacing($this->facing);
 		$w->bool($this->upsideDown);
+		$w->enum($this->shape);
 	}
 
-	public function readStateFromWorld() : Block{
-		parent::readStateFromWorld();
+	public function onNearbyBlockChange() : void{
+		parent::onNearbyBlockChange();
 
-		$this->collisionBoxes = null;
+		if($this->recalculateShape()){
+			$this->position->getWorld()->setBlock($this->position, $this);
+		}
+	}
 
+	/**
+	 * Returns whether the shape was changed.
+	 */
+	protected function recalculateShape() : bool{
 		$clockwise = Facing::rotateY($this->facing, true);
 		if(($backFacing = $this->getPossibleCornerFacing(false)) !== null){
-			$this->shape = $backFacing === $clockwise ? StairShape::OUTER_RIGHT : StairShape::OUTER_LEFT;
+			$shape = $backFacing === $clockwise ? StairShape::OUTER_RIGHT : StairShape::OUTER_LEFT;
 		}elseif(($frontFacing = $this->getPossibleCornerFacing(true)) !== null){
-			$this->shape = $frontFacing === $clockwise ? StairShape::INNER_RIGHT : StairShape::INNER_LEFT;
+			$shape = $frontFacing === $clockwise ? StairShape::INNER_RIGHT : StairShape::INNER_LEFT;
 		}else{
-			$this->shape = StairShape::STRAIGHT;
+			$shape = StairShape::STRAIGHT;
 		}
 
-		return $this;
+		if($shape === $this->shape){
+			return false;
+		}
+
+		$this->shape = $shape;
+		return true;
 	}
 
 	public function isUpsideDown() : bool{ return $this->upsideDown; }

@@ -44,12 +44,14 @@ use pocketmine\block\utils\CopperOxidation;
 use pocketmine\block\utils\CoralMaterial;
 use pocketmine\block\utils\CoralType;
 use pocketmine\block\utils\DyeColor;
+use pocketmine\block\utils\HorizontalConnections;
 use pocketmine\block\utils\HorizontalFacing;
 use pocketmine\block\utils\Lightable;
 use pocketmine\block\utils\MultiAnyFacing;
 use pocketmine\block\utils\PillarRotation;
 use pocketmine\block\utils\SignLikeRotation;
 use pocketmine\block\utils\SlabType;
+use pocketmine\block\utils\StairShape;
 use pocketmine\block\Wall;
 use pocketmine\block\Wood;
 use pocketmine\data\bedrock\block\BlockLegacyMetadata;
@@ -166,6 +168,12 @@ final class CommonProperties{
 	 * @phpstan-var non-empty-list<Property<contravariant FenceGate>>
 	 */
 	public readonly array $fenceGateProperties;
+
+	/**
+	 * @var Property[]
+	 * @phpstan-var non-empty-list<Property<contravariant HorizontalConnections>>
+	 */
+	public readonly array $horizontalConnectionProperties;
 
 	/**
 	 * @var Property[]
@@ -392,6 +400,12 @@ final class CommonProperties{
 		$this->stairProperties = [
 			new BoolProperty(StateNames::UPSIDE_DOWN_BIT, fn(Stair $b) => $b->isUpsideDown(), fn(Stair $b, bool $v) => $b->setUpsideDown($v)),
 			new ValueFromIntProperty(StateNames::WEIRDO_DIRECTION, $vm->horizontalFacing5Minus, $hfGet, $hfSet),
+			new ValueFromStringProperty(
+				StateNames::MC_CORNER,
+				$vm->stairShape,
+				fn(Stair $b) => $b->getShape(),
+				fn(Stair $b, StairShape $v) => $b->setShape($v)
+			),
 		];
 
 		$this->stemProperties = [
@@ -406,6 +420,21 @@ final class CommonProperties{
 			new BoolProperty(StateNames::UPSIDE_DOWN_BIT, fn(Trapdoor $b) => $b->isTop(), fn(Trapdoor $b, bool $v) => $b->setTop($v)),
 			new BoolProperty(StateNames::OPEN_BIT, fn(Trapdoor $b) => $b->isOpen(), fn(Trapdoor $b, bool $v) => $b->setOpen($v)),
 		];
+
+		$horizontalConnectionProperties = [];
+		foreach([
+			Facing::NORTH => StateNames::MC_CONNECTION_NORTH,
+			Facing::SOUTH => StateNames::MC_CONNECTION_SOUTH,
+			Facing::WEST => StateNames::MC_CONNECTION_WEST,
+			Facing::EAST => StateNames::MC_CONNECTION_EAST
+		] as $facing => $stateName){
+			$horizontalConnectionProperties[] = new BoolProperty(
+				$stateName,
+				fn(HorizontalConnections $b) => $b->isConnected($facing),
+				fn(HorizontalConnections $b, bool $v) => $b->setConnected($facing, $v)
+			);
+		}
+		$this->horizontalConnectionProperties = $horizontalConnectionProperties;
 
 		$wallProperties = [
 			new BoolProperty(StateNames::WALL_POST_BIT, fn(Wall $b) => $b->isPost(), fn(Wall $b, bool $v) => $b->setPost($v)),

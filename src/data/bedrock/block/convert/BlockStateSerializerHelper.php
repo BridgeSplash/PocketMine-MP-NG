@@ -52,6 +52,7 @@ use pocketmine\data\bedrock\block\BlockStateNames;
 use pocketmine\data\bedrock\block\BlockStateNames as StateNames;
 use pocketmine\data\bedrock\block\BlockTypeNames as Ids;
 use pocketmine\data\bedrock\block\convert\BlockStateWriter as Writer;
+use pocketmine\data\bedrock\block\convert\property\ValueMappings;
 use pocketmine\data\bedrock\MushroomBlockTypeIdMap;
 use pocketmine\math\Facing;
 
@@ -223,7 +224,8 @@ final class BlockStateSerializerHelper{
 	public static function encodeStairs(Stair $block, Writer $out) : Writer{
 		return $out
 			->writeBool(BlockStateNames::UPSIDE_DOWN_BIT, $block->isUpsideDown())
-			->writeWeirdoHorizontalFacing($block->getFacing());
+			->writeWeirdoHorizontalFacing($block->getFacing())
+			->writeString(BlockStateNames::MC_CORNER, ValueMappings::getInstance()->stairShape->valueToRaw($block->getShape()));
 	}
 
 	public static function encodeStem(Stem $block, Writer $out) : Writer{

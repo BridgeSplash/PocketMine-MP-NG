@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ed3cf1c7ea38c831d116c6758fa674ca",
+    "content-hash": "e30ac7172c0073540002d7903fca1c05",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -259,16 +259,16 @@
         },
         {
             "name": "axolotl-pm/bedrock-block-upgrade-schema",
-            "version": "5.2.0",
+            "version": "dev-bedrock-1.26.50",
             "source": {
                 "type": "git",
                 "url": "https://github.com/axolotl-pm/BedrockBlockUpgradeSchema.git",
-                "reference": "5d7889c9a1cdf9e3cd814d2a104ad69b75116ec7"
+                "reference": "1510d436da148299c3a2cd56ab969aa83a6f927d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/axolotl-pm/BedrockBlockUpgradeSchema/zipball/5d7889c9a1cdf9e3cd814d2a104ad69b75116ec7",
-                "reference": "5d7889c9a1cdf9e3cd814d2a104ad69b75116ec7",
+                "url": "https://api.github.com/repos/axolotl-pm/BedrockBlockUpgradeSchema/zipball/1510d436da148299c3a2cd56ab969aa83a6f927d",
+                "reference": "1510d436da148299c3a2cd56ab969aa83a6f927d",
                 "shasum": ""
             },
             "type": "library",
@@ -279,9 +279,9 @@
             "description": "Schemas describing how to upgrade saved block data in older Minecraft: Bedrock Edition world saves",
             "support": {
                 "issues": "https://github.com/axolotl-pm/BedrockBlockUpgradeSchema/issues",
-                "source": "https://github.com/axolotl-pm/BedrockBlockUpgradeSchema/tree/5.2.0"
+                "source": "https://github.com/axolotl-pm/BedrockBlockUpgradeSchema/tree/bedrock-1.26.50"
             },
-            "time": "2025-10-02T13:22:10+00:00"
+            "time": "2026-08-24T13:03:33+00:00"
         },
         {
             "name": "axolotl-pm/bedrock-item-upgrade-schema",
@@ -3872,6 +3872,7 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "altayofficial/network": 20,
+        "axolotl-pm/bedrock-block-upgrade-schema": 20,
         "nethergamesmc/bedrock-data": 20,
         "nethergamesmc/bedrock-protocol": 20
     },

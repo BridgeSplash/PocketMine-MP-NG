@@ -86,7 +86,8 @@ final class ItemTranslator{
 		if($blockStateData !== null){
 			$blockRuntimeId = $this->blockStateDictionary->lookupStateIdFromData($blockStateData);
 			if($blockRuntimeId === null){
-				throw new AssumptionFailedError("Unmapped blockstate returned by blockstate serializer: " . $blockStateData->toNbt());
+				//this can happen when a block state contains properties which don't exist in the target protocol version
+				throw new ItemTypeSerializeException("Unmapped blockstate returned by blockstate serializer: " . $blockStateData->toNbt());
 			}
 		}else{
 			$blockRuntimeId = null;

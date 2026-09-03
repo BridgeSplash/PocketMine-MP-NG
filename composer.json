@@ -35,7 +35,7 @@
       "adhocore/json-comment": "~1.2.0",
       "altayofficial/network": "dev-main",
       "altayofficial/webrtc": "^1.2.0",
-      "axolotl-pm/bedrock-block-upgrade-schema": "~5.2.0+bedrock-1.21.110",
+      "axolotl-pm/bedrock-block-upgrade-schema": "dev-bedrock-1.26.50",
       "axolotl-pm/bedrock-item-upgrade-schema": "1.18.0+bedrock-1.26.40",
       "nethergamesmc/bedrock-data": "dev-master",
       "nethergamesmc/bedrock-protocol": "dev-master",

@@ -27,10 +27,12 @@ use pocketmine\block\Block;
 use pocketmine\block\Slab;
 use pocketmine\block\Stair;
 use pocketmine\block\utils\Colored;
+use pocketmine\block\utils\HorizontalConnections;
 use pocketmine\data\bedrock\block\BlockStateData;
 use pocketmine\data\bedrock\block\convert\BlockStateReader as Reader;
 use pocketmine\data\bedrock\block\convert\BlockStateWriter as Writer;
 use pocketmine\data\bedrock\block\convert\property\CommonProperties;
+use pocketmine\data\bedrock\block\convert\property\Property;
 use pocketmine\data\bedrock\block\convert\property\StringProperty;
 use function array_map;
 use function count;
@@ -185,17 +187,24 @@ final class BlockSerializerDeserializerRegistrar{
 	}
 
 	/**
+	 * @param Property[] $properties
+	 *
 	 * @phpstan-template TBlock of Block&Colored
 	 * @phpstan-param TBlock $block
+	 * @phpstan-param list<Property<contravariant TBlock>> $properties
 	 */
-	public function mapColored(Block $block, string $idPrefix, string $idSuffix) : void{
-		$this->mapFlattenedId(FlattenedIdModel::create($block)
+	public function mapColored(Block $block, string $idPrefix, string $idSuffix, array $properties = []) : void{
+		$model = FlattenedIdModel::create($block)
 			->idComponents([
 				$idPrefix,
 				CommonProperties::getInstance()->dyeColorIdInfix,
 				$idSuffix
-			])
-		);
+			]);
+		if(count($properties) !== 0){
+			$model = $model->properties($properties);
+		}
+
+		$this->mapFlattenedId($model);
 	}
 
 	public function mapSlab(Slab $block, string $type) : void{
@@ -208,6 +217,14 @@ final class BlockSerializerDeserializerRegistrar{
 
 	public function mapStairs(Stair $block, string $id) : void{
 		$this->mapModel(Model::create($block, $id)->properties(CommonProperties::getInstance()->stairProperties));
+	}
+
+	/**
+	 * @phpstan-template TBlock of Block&HorizontalConnections
+	 * @phpstan-param TBlock $block
+	 */
+	public function mapHorizontallyConnected(Block $block, string $id) : void{
+		$this->mapModel(Model::create($block, $id)->properties(CommonProperties::getInstance()->horizontalConnectionProperties));
 	}
 
 	/**

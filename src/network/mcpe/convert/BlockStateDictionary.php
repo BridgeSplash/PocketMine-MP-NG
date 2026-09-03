@@ -24,8 +24,13 @@ declare(strict_types=1);
 namespace pocketmine\network\mcpe\convert;
 
 use pocketmine\data\bedrock\block\BlockStateData;
+use pocketmine\data\bedrock\block\BlockStateNames;
+use pocketmine\data\bedrock\block\BlockStateStringValues;
 use pocketmine\data\bedrock\block\BlockTypeNames;
 use pocketmine\nbt\NbtDataException;
+use pocketmine\nbt\tag\ByteTag;
+use pocketmine\nbt\tag\StringTag;
+use pocketmine\nbt\tag\Tag;
 use pocketmine\nbt\TreeRoot;
 use pocketmine\network\mcpe\protocol\serializer\NetworkNbtSerializer;
 use pocketmine\utils\Utils;
@@ -55,6 +60,12 @@ final class BlockStateDictionary{
 	 * @phpstan-var array<string, array<int, int>|int>|null
 	 */
 	private ?array $idMetaToStateIdLookupCache = null;
+
+	/**
+	 * @var Tag[]|null
+	 * @phpstan-var array<string, Tag>|null
+	 */
+	private static ?array $clientModelPropertyDefaults = null;
 
 	/**
 	 * @param BlockStateDictionaryEntry[] $states
@@ -136,11 +147,61 @@ final class BlockStateDictionary{
 		$name = $data->getName();
 
 		$lookup = $this->stateDataToStateIdLookup[$name] ?? null;
-		return match(true){
-			$lookup === null => null,
-			is_int($lookup) => $lookup,
-			is_array($lookup) => $lookup[BlockStateDictionaryEntry::encodeStateProperties($data->getStates())] ?? null
-		};
+		if($lookup === null){
+			return null;
+		}
+		if(is_int($lookup)){
+			return $lookup;
+		}
+
+		$stateId = $lookup[BlockStateDictionaryEntry::encodeStateProperties($data->getStates())] ?? null;
+		if($stateId !== null){
+			return $stateId;
+		}
+
+		$simplified = self::resetClientModelProperties($data->getStates());
+		return $simplified === null ? null : ($lookup[BlockStateDictionaryEntry::encodeStateProperties($simplified)] ?? null);
+	}
+
+	/**
+	 * @return Tag[]
+	 * @phpstan-return array<string, Tag>
+	 */
+	private static function getClientModelPropertyDefaults() : array{
+		return self::$clientModelPropertyDefaults ??= [
+			BlockStateNames::MC_CORNER => new StringTag(BlockStateStringValues::MC_CORNER_NONE),
+			BlockStateNames::MC_CONNECTION_NORTH => new ByteTag(0),
+			BlockStateNames::MC_CONNECTION_SOUTH => new ByteTag(0),
+			BlockStateNames::MC_CONNECTION_WEST => new ByteTag(0),
+			BlockStateNames::MC_CONNECTION_EAST => new ByteTag(0),
+		];
+	}
+
+	/**
+	 * Resets properties which only influence the client-side model of a block to their default values. Older versions
+	 * don't know about some of these values (e.g. stair corners and fence connections were added in 1.26.50), so this
+	 * allows such blocks to keep working on older protocols instead of turning into unknown blocks.
+	 *
+	 * Returns null if the given states didn't contain any of these properties.
+	 *
+	 * @param Tag[] $states
+	 * @phpstan-param array<string, Tag> $states
+	 *
+	 * @return Tag[]|null
+	 * @phpstan-return array<string, Tag>|null
+	 */
+	private static function resetClientModelProperties(array $states) : ?array{
+		$changed = false;
+		foreach(Utils::stringifyKeys(self::getClientModelPropertyDefaults()) as $name => $default){
+			$tag = $states[$name] ?? null;
+			if($tag === null || $tag->equals($default)){
+				continue;
+			}
+			$states[$name] = $default;
+			$changed = true;
+		}
+
+		return $changed ? $states : null;
 	}
 
 	/**

@@ -298,9 +298,14 @@ final class BlockStateDeserializerHelper{
 	 * @throws BlockStateDeserializeException
 	 */
 	public static function decodeStairs(Stair $block, BlockStateReader $in) : Stair{
+		$rawShape = $in->readString(BlockStateNames::MC_CORNER);
+		$shape = ValueMappings::getInstance()->stairShape->rawToValue($rawShape) ??
+			throw new BlockStateDeserializeException("Property \"" . BlockStateNames::MC_CORNER . "\" has invalid value \"$rawShape\"");
+
 		return $block
 			->setUpsideDown($in->readBool(BlockStateNames::UPSIDE_DOWN_BIT))
-			->setFacing($in->readWeirdoHorizontalFacing());
+			->setFacing($in->readWeirdoHorizontalFacing())
+			->setShape($shape);
 	}
 
 	/** @throws BlockStateDeserializeException */
